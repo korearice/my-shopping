@@ -1,14 +1,337 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="Generator" content="EditPlus®">
-<meta name="Author" content="">
-<meta name="Keywords" content="">
-<meta name="Description" content="">
-<title>Shopping</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쇼츠 추천 상품 모음집</title>
+    <style>
+        /* GitHub 라이트(흰색) 무채색 시스템 변수 */
+        :root {
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #d0d7de;
+            --text-primary: #1f2328;
+            --text-secondary: #636c76;
+            --badge-bg: #f6f8fa;
+            --badge-border: #d0d7de;
+            --hover-bg: #f6f8fa;
+            --thumb-bg: #f6f8fa;
+            --input-focus-border: #0969da;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px; /* 모바일 프레임 최적화 */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 프로필 헤더 영역 */
+        .profile-header {
+            text-align: center;
+            padding: 10px 0 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--thumb-bg);
+            margin: 0 auto 12px;
+            border: 1px solid var(--card-border);
+            object-fit: cover;
+        }
+
+        .profile-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .profile-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* 검색창 영역 */
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            background-color: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            outline: none;
+            box-shadow: 0 1px 2px rgba(31, 35, 40, 0.04);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search-input:focus {
+            border-color: #8c959f;
+            box-shadow: 0 0 0 3px rgba(140, 149, 159, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        /* 카드 리스트 세션 */
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .list-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 1. 썸네일 + 상품 이름 카드 형태 */
+        .product-card {
+            display: flex;
+            align-items: center;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 1px 2px rgba(31, 35, 40, 0.04);
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .product-card:active, .product-card:hover {
+            background-color: var(--hover-bg);
+            border-color: #8c959f;
+        }
+
+        .card-thumb {
+            width: 72px;
+            height: 72px;
+            border-radius: 6px;
+            object-fit: cover;
+            background-color: var(--thumb-bg);
+            border: 1px solid var(--card-border);
+            flex-shrink: 0;
+        }
+
+        .card-info {
+            margin-left: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .card-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background-color: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: fit-content;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-subtext {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* 2. 상품 이름만 있는 심플 텍스트 카드 형태 */
+        .text-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 1px 2px rgba(31, 35, 40, 0.04);
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .text-card:active, .text-card:hover {
+            background-color: var(--hover-bg);
+            border-color: #8c959f;
+        }
+
+        .text-card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .arrow-icon {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 검색 결과 없음 메시지 */
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 30px 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border: 1px dashed var(--card-border);
+            border-radius: 8px;
+        }
+
+        /* 하단 공정위 필수 표시 문구 및 푸터 */
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            border-top: 1px solid var(--card-border);
+            padding-top: 20px;
+        }
+    </style>
 </head>
 <body>
-Test Page
+
+    <div class="container">
+        <!-- 프로필 섹션 -->
+        <header class="profile-header">
+            <img src="images/logo.png" alt="프로필 사진" class="profile-img">
+            <h1 class="profile-title">@쇼츠쇼핑랩</h1>
+            <p class="profile-desc">유튜브 쇼츠 / 릴스 소개 상품 링크 모음<br>영상의 [상품 번호]나 키워드로 검색해보세요!</p>
+        </header>
+
+        <!-- 실시간 검색창 -->
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="상품 번호(예: 101) 또는 상품명 검색...">
+        </div>
+
+        <!-- 세션 1: 썸네일 + 상품 이름 (검색 대상 main.list-group) -->
+        <main class="list-group" id="mainProductList">
+            <div class="section-title">📌 영상 속 추천 상품</div>
+            <!-- 상품 카드 -->
+            <a href="https://link.coupang.com/a/hrbeCqk1wO" target="_blank" class="product-card">
+                <img src="images/thumb_1.png" alt="상품 썸네일" class="card-thumb">
+                <div class="card-info">
+                    <span class="card-badge">#빅카우 #오리비누받침대 #물빠짐비누받침대 #욕실꿀템 #비누받침대추천</span>
+                    <div class="card-title">1. 매번 불어터지는 비누, 이 귀여운 오리 하나로 끝냅니다 🐥</div>
+                    <div class="card-subtext">최저가 보러가기 ➔</div>
+                </div>
+            </a>
+        </main>
+
+        <!-- 검색 결과가 없을 때 안내 메시지 -->
+        <div id="noResults" class="no-results">
+            검색 결과가 없습니다. 번호나 다른 키워드를 입력해 보세요.
+        </div>
+
+        <section class="list-group" style="margin-top: 10px;">
+            <div class="section-title">🔗 인기 특가 상품</div>
+
+            <a href="https://iryan.kr/t8g4g1fq81" target="_blank" class="text-card">
+                <span class="text-card-title">📦 쿠팡 인기상품</span>
+                <span class="arrow-icon">➔</span>
+            </a>
+
+            <a href="https://iryan.kr/t8g4g1fq80" target="_blank" class="text-card">
+                <span class="text-card-title">⚡ 알리익스프레스 오늘의 특가</span>
+                <span class="arrow-icon">➔</span>
+            </a>
+
+            <a href="https://iryan.kr/t8g4ipx1gf" target="_blank" class="text-card">
+                <span class="text-card-title">⚡ 11번가 최대 할인!</span>
+                <span class="arrow-icon">➔</span>
+            </a>
+        </section>
+
+        <!-- 푸터 및 필수 안내 문구 -->
+        <footer class="footer">
+            <p>이 포스팅은 쿠팡 파트너스 및 제휴 마케팅 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받을 수 있습니다.</p>
+            <p style="margin-top: 8px;">© 2026 Shorts Shopping Lab. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- 실시간 검색 제어 자바스크립트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const mainList = document.getElementById('mainProductList');
+            const productCards = mainList.querySelectorAll('.product-card');
+            const noResults = document.getElementById('noResults');
+
+            searchInput.addEventListener('input', (e) => {
+                const keyword = e.target.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                productCards.forEach(card => {
+                    const cardText = card.textContent.toLowerCase();
+
+                    if (cardText.includes(keyword)) {
+                        card.style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (visibleCount === 0) {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
